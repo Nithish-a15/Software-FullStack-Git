@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ride Booking System</title>
+
+<style>
+body{
+font-family: Arial;
+background: linear-gradient(135deg,#4facfe,#00f2fe);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+margin:0;
+}
+
+.container{
+width:380px;
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 15px 35px rgba(0,0,0,0.2);
+text-align:center;
+}
+
+input,select,button{
+width:100%;
+padding:10px;
+margin:6px 0;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+button{
+background:#007bff;
+color:white;
+border:none;
+font-weight:bold;
+cursor:pointer;
+}
+
+.requestBox{
+background:#f1f5ff;
+padding:10px;
+border-radius:8px;
+margin:10px 0;
+text-align:left;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>🚕 Ride Booking System</h2>
+
+<!-- LOGIN -->
+<div id="login">
+<select id="role">
+<option value="">Select Role</option>
+<option value="user">User</option>
+<option value="driver">Driver</option>
+<option value="admin">Admin</option>
+</select>
+
+<input type="text" placeholder="Enter Name">
+<button onclick="login()">Login</button>
+</div>
+
+<!-- USER -->
+<div id="user" style="display:none;">
+<h3>User Booking</h3>
+
+<input type="text" id="pickup" placeholder="Pickup">
+<input type="text" id="drop" placeholder="Drop">
+
+<select id="vehicle">
+<option>Bike</option>
+<option>Auto</option>
+<option>Car</option>
+</select>
+
+<button onclick="bookRide()">Send Request</button>
+<button onclick="goLogin()">Back</button>
+</div>
+
+<!-- DRIVER -->
+<div id="driver" style="display:none;">
+<h3>Driver Panel</h3>
+
+<div id="driverRequests"></div>
+
+<button onclick="goLogin()">Back</button>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" style="display:none;">
+<h3>Admin Dashboard</h3>
+
+<p>Total Requests: <span id="rides">0</span></p>
+<p>Completed: <span id="completed">0</span></p>
+
+<button onclick="goLogin()">Back</button>
+</div>
+
+</div>
+
+<script>
+
+let completed = 0;
+
+function login(){
+
+let role=document.getElementById("role").value;
+document.getElementById("login").style.display="none";
+
+if(role=="user"){
+document.getElementById("user").style.display="block";
+}
+
+else if(role=="driver"){
+document.getElementById("driver").style.display="block";
+showDriverRequests();
+}
+
+else if(role=="admin"){
+document.getElementById("admin").style.display="block";
+updateAdmin();
+}
+
+}
+
+function bookRide(){
+
+let pickup=document.getElementById("pickup").value;
+let drop=document.getElementById("drop").value;
+let vehicle=document.getElementById("vehicle").value;
+
+let requests = JSON.parse(localStorage.getItem("requests")) || [];
+
+requests.push({
+pickup:pickup,
+drop:drop,
+vehicle:vehicle
+});
+
+localStorage.setItem("requests",JSON.stringify(requests));
+
+alert("Request sent");
+
+updateAdmin();
+}
+
+function showDriverRequests(){
+
+let requests = JSON.parse(localStorage.getItem("requests")) || [];
+
+let html="";
+
+if(requests.length==0){
+html="No ride requests";
+}
+else{
+
+requests.forEach((r,index)=>{
+
+html+=`
+<div class="requestBox">
+Pickup: ${r.pickup} <br>
+Drop: ${r.drop} <br>
+Vehicle: ${r.vehicle} <br><br>
+
+<button onclick="acceptRide(${index})">Accept</button>
+<button onclick="declineRide(${index})">Decline</button>
+</div>
+`;
+
+});
+
+}
+
+document.getElementById("driverRequests").innerHTML=html;
+
+}
+
+function acceptRide(index){
+
+let requests = JSON.parse(localStorage.getItem("requests")) || [];
+
+requests.splice(index,1);
+
+localStorage.setItem("requests",JSON.stringify(requests));
+
+completed++;
+
+showDriverRequests();
+updateAdmin();
+}
+
+function declineRide(index){
+
+let requests = JSON.parse(localStorage.getItem("requests")) || [];
+
+requests.splice(index,1);
+
+localStorage.setItem("requests",JSON.stringify(requests));
+
+showDriverRequests();
+updateAdmin();
+}
+
+function updateAdmin(){
+
+let requests = JSON.parse(localStorage.getItem("requests")) || [];
+
+document.getElementById("rides").innerText=requests.length;
+document.getElementById("completed").innerText=completed;
+
+}
+
+function goLogin(){
+document.getElementById("login").style.display="block";
+document.getElementById("user").style.display="none";
+document.getElementById("driver").style.display="none";
+document.getElementById("admin").style.display="none";
+}
+
+</script>
+
+</body>
+</html>
